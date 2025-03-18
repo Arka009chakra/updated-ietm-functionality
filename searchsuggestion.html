@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" placeholder="Search What You Want !!!!" id="t1"/>
+    <div id ="suggesstion" style="display:none;position:absolute;"></div>
+</body>
+<script>
+document.getElementById('t1').addEventListener('input',function(){
+    const input = this;
+    const searchterm = input.value
+    fetch('bomget.php',{
+        method:'POST',
+        headers:
+        {
+            'Content-Type':'application/json',
+        },
+        body:JSON.stringify({searchterm:searchterm})
+    })
+    .then((res)=>res.json())
+    .then((res1)=>{
+        console.log(res1)
+        const x  = document.getElementById('suggesstion')
+        x.innerHTML='';
+        x.style.display='block'
+        res1.forEach(item=>{
+            const y = document.createElement('div')
+            y.textContent = item
+            y.style.padding = '5px'
+            y.style.cursor = 'pointer'
+
+            y.addEventListener('click',function(){
+                input.value = item 
+                x.innerHTML='';
+            });
+            x.appendChild(y)
+        })
+    })
+    .catch((err)=>console.log("Error"))
+})
+</script>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" id="t1"/>
+    <input type="text" id="t2"/>
+    <button onclick="fun()">check</button>
+</body>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    document.getElementById("t1").value = params.get('id') || '';
+    document.getElementById("t2").value = params.get('note') || '';
+    function fun()
+    {
+        alert(document.getElementById("t1").value)
+    }
+</script>
+</html>

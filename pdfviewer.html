@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF with Drawing, Text, Erase, and Download</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 85%;
+            height: 90%;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 5px solid black;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            padding: 15px;
+            background-color: #050505;
+            color: white;
+            font-size: 18px;
+        }
+
+        .controls i {
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .controls i:hover {
+            color: grey;
+        }
+
+        .pdf-container {
+            position: relative;
+            flex: 1;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        #pdf-viewer {
+            position: relative;
+        }
+
+        #drawing-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            cursor: crosshair;
+        }
+
+        .text-box {
+            position: absolute;
+            z-index: 11;
+            font-size: 18px;
+            border: 2px solid red;
+            background: transparent;
+            color: red;
+            outline: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="controls">
+            <i class="fas fa-pen" id="pen-btn"></i>
+            <i class="fas fa-eraser" id="eraser-btn"></i>
+            <i class="fas fa-font" id="text-btn"></i>
+            <i class="fas fa-search-plus" id="zoom-in-btn"></i>
+            <i class="fas fa-search-minus" id="zoom-out-btn"></i>
+            <i class="fas fa-undo" id="rotate-btn"></i>
+            <i class="fas fa-download" id="download-btn"></i>
+        </div>
+
+        <div class="pdf-container">
+            <div id="pdf-viewer"></div>
+            <canvas id="drawing-canvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+       
+       
+        const url = 'OpcenterEXDS_UserManual';
+
+        // Set up drawing canvas
+        const drawingCanvas = document.getElementById('drawing-canvas');
+        const ctx = drawingCanvas.getContext('2d');
+        let isDrawing = false;
+        let isErasing = false;
+        let isTextMode = false;
+        let startX, startY;
+
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        let pdfCanvas, pdfCtx, viewport, scale = 1.5, rotation = 0;
+        let pdfDoc;
+
+        // Load the PDF
+        function loadPDF() {
+            pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+                pdfDoc = pdfDoc_;
+                renderPage(1);
+            });
+        }
+
+        function renderPage(pageNum) {
+            pdfDoc.getPage(pageNum).then(function(page) {
+                viewport = page.getViewport({ scale: scale, rotation: rotation });
+
+                const container = document.getElementById('pdf-viewer');
+                container.style.width = `${viewport.width}px`;
+                container.style.height = `${viewport.height}px`;
+
+                if (!pdfCanvas) {
+                    pdfCanvas = document.createElement('canvas');
+                    container.appendChild(pdfCanvas);
+                    pdfCtx = pdfCanvas.getContext('2d');
+                }
+
+                pdfCanvas.width = viewport.width;
+                pdfCanvas.height = viewport.height;
+
+                page.render({
+                    canvasContext: pdfCtx,
+                    viewport: viewport
+                });
+
+                // drawingCanvas.width = pdfCanvas.width;
+                // drawingCanvas.height = pdfCanvas.height;
+                // drawingCanvas.style.width = `${pdfCanvas.width}px`;
+                // drawingCanvas.style.height = `${pdfCanvas.height}px`;
+            });
+        }
+
+        loadPDF();
+
+        drawingCanvas.addEventListener('mousedown', (e) => {
+            if (isTextMode) return;
+
+            isDrawing = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+        });
+
+        
+
+        drawingCanvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            ctx.closePath();
+        });
+
+       
+    </script>

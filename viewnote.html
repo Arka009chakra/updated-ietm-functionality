@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Data</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Database Records</h1>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Path</th>
+                <th>Note</th>
+                <th>Selected Text</th>
+                <th>Edit</th>
+                <th>Delete</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be inserted here -->
+        </tbody>
+    </table>
+    <input type="text" id="t4" />
+    <button onclick="filterTable()">Search</button>
+    <script>
+        // Use JavaScript fetch() to retrieve data from PHP
+        fetch('noteview.php')
+            .then(response => response.json())  // Parse the JSON response
+            .then(data => {
+                // Get the table body element
+                const tableBody = document.querySelector('#data-table tbody');
+
+                // Loop through the data and create a table row for each item
+                data.forEach(row => {
+                    const tableRow = document.createElement('tr');
+
+                    // Create table cells for each column and append them to the row
+                    const pathCell = document.createElement('td');
+                    pathCell.textContent = row.crumb;  // Assuming 'id' is a column in the database
+                    pathCell.style.cursor = "pointer";
+                    pathCell.style.color = "blue";
+                    pathCell.addEventListener('click', () => {
+                        alert(row.id)
+                    })
+                    tableRow.appendChild(pathCell);
+                    const noteCell = document.createElement('td');
+                    noteCell.textContent = row.note;  // Assuming 'name' is a column in the database
+                    tableRow.appendChild(noteCell);
+                    const selectedCell = document.createElement('td');
+                    selectedCell.textContent = row.selected;  // Assuming 'email' is a column in the database
+                    tableRow.appendChild(selectedCell);
+                    const editCell = document.createElement('td');
+                    const editbutton = document.createElement('button');
+                    editbutton.textContent = 'Edit';
+                    editbutton.addEventListener('click', () => {
+                        const id = row.id;
+                        const note = encodeURIComponent(row.note); // Encode to handle special characters
+                        window.location.href = `input.html?id=${id}&note=${note}`;
+                    });
+
+
+
+                    editCell.appendChild(editbutton);
+                    tableRow.appendChild(editCell);
+                    tableBody.appendChild(tableRow);
+
+                    const deleteCell = document.createElement('td');
+                    const deletebutton = document.createElement('button');
+                    deletebutton.textContent = 'Delete';
+
+                    deletebutton.addEventListener('click', () => {
+                        alert('Name: ' + row.id);
+                    });
+
+                    deleteCell.appendChild(deletebutton);
+                    tableRow.appendChild(deleteCell);
+                    tableBody.appendChild(tableRow);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+
+
+        function filterTable() {
+            console.log("called");
+            const searchValue = document.getElementById('t4').value.toLowerCase();
+            const rows = document.querySelectorAll('#data-table tbody tr');
+
+            rows.forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                let match = false;
+
+                for (let cell of cells) {
+                    const text = cell.textContent;
+                    const lowerText = text.toLowerCase();
+
+                    if (searchValue && lowerText.includes(searchValue)) {
+                        match = true;
+                        const regex = new RegExp(`(${searchValue})`, "gi");
+                        cell.innerHTML = text.replace(regex, '<span class="highlight">$1</span>');
+                    } else {
+                        cell.innerHTML = text; // Reset cell content if no match
+                    }
+                }
+
+                row.style.display = match ? '' : 'none';
+            });
+        }
+
+
+
+    </script>
+</body>
+
+</html>
